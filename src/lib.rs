@@ -1,6 +1,7 @@
 //! Rust Helpers Library
 
 use rand::prelude::*;
+use std::collections::HashSet;
 
 /// Sends greetings from the Rust Helpers library.
 pub fn greet_rust_helpers(name: &str) -> String {
@@ -9,7 +10,7 @@ pub fn greet_rust_helpers(name: &str) -> String {
 /// Randomizes the order of a vec and splits it into smaller vectors of a specified size.
 /// 
 /// # Arguments
-/// * `vec` - The vector to be split and randomized.
+/// * `vec` - The vector to be split and randomized. It must implement the `Clone` trait.
 /// * `chunk_size` - The size of each chunk in the resulting vector. The last chunk may be smaller if the total number of elements is not divisible by `chunk_size`.
 /// 
 /// # Returns
@@ -33,7 +34,7 @@ pub fn split_rand_vec<T: Clone>(vec: Vec<T>, chunk_size: usize) -> Vec<Vec<T>> {
 
 /// Randomizes the order of a vec and splits it into smaller vectors of equal size.
 /// # Arguments
-/// * `vec` - The vector to be split and randomized.
+/// * `vec` - The vector to be split and randomized. It must implement the `Clone` trait.
 /// * `parts` - The number of parts to split the vector into. A number of parts may contain fewer elements than others if the total number of elements is not divisible by `parts`.
 ///
 /// # Returns
@@ -52,6 +53,35 @@ pub fn split_rand_vec<T: Clone>(vec: Vec<T>, chunk_size: usize) -> Vec<Vec<T>> {
 pub fn split_rand_vec_eq<T: Clone>(vec: Vec<T>, parts: usize) -> Vec<Vec<T>> {
     let mut rng = rand::rng();
     let mut vec: Vec<T> = vec;
+    vec.shuffle(&mut rng);
+    let mut result = vec![Vec::new(); parts];
+    for (i, e) in vec.iter().enumerate() {
+    result[i % parts].push(e.clone());
+    }
+    return result
+}
+
+/// Randomizes the order of a HashSet and splits it into smaller vectors of equal size.
+/// # Arguments
+/// * `vec` - The vector to be split and randomized. It must implement the `Clone` trait.
+/// * `parts` - The number of parts to split the vector into. A number of parts may contain fewer elements than others if the total number of elements is not divisible by `parts`.
+///
+/// # Returns
+/// A vector of vectors, where each inner vector is a part of the original vector, randomized in order.
+/// # Example
+/// ```
+/// use rust_helpers::split_rand_vec_eq;
+/// let vec = vec![1, 2, 3, 4, 5, 6, 7];
+/// let chunked = split_rand_vec_eq(vec, 3);
+/// assert_eq!(chunked.len(), 3);
+/// assert_eq!(chunked[0].len(), 3);
+/// assert_eq!(chunked[1].len(), 2);
+/// assert_eq!(chunked[2].len(), 2);
+/// /// The elements in the chunks are randomized, so the order may vary.
+/// ```
+pub fn split_rand_hashset_eq<T: Clone>(vec: HashSet<T>, parts: usize) -> Vec<Vec<T>> {
+    let mut rng = rand::rng();
+    let mut vec: Vec<T> = vec.into_iter().collect();
     vec.shuffle(&mut rng);
     let mut result = vec![Vec::new(); parts];
     for (i, e) in vec.iter().enumerate() {
@@ -82,6 +112,16 @@ mod tests {
     fn test_split_rand_vec_eq() {
         let vec = vec![1, 2, 3, 4, 5, 6, 7];
         let chunked = split_rand_vec_eq(vec, 3);
+        assert_eq!(chunked.len(), 3);
+        assert_eq!(chunked[0].len(), 3);
+        assert_eq!(chunked[1].len(), 2);
+        assert_eq!(chunked[2].len(), 2);
+    }
+
+    #[test]
+    fn test_split_hashset_eq() {
+        let vec: HashSet<i32> = [1, 2, 3, 4, 5, 6, 7].iter().cloned().collect();
+        let chunked = split_rand_hashset_eq(vec, 3);
         assert_eq!(chunked.len(), 3);
         assert_eq!(chunked[0].len(), 3);
         assert_eq!(chunked[1].len(), 2);
