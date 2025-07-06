@@ -8,14 +8,14 @@ pub fn greet_rust_helpers(name: &str) -> String {
     format!("Hello, {}! Welcome to Rust Helpers.", name)
 }
 /// Randomizes the order of a vec and splits it into smaller vectors of a specified size.
-/// 
+///
 /// # Arguments
 /// * `vec` - The vector to be split and randomized. It must implement the `Clone` trait.
 /// * `chunk_size` - The size of each chunk in the resulting vector. The last chunk may be smaller if the total number of elements is not divisible by `chunk_size`.
-/// 
+///
 /// # Returns
 /// A vector of vectors, where each inner vector is a chunk of the original vector, randomized in order.
-/// 
+///
 /// # Example
 /// ```
 /// use rust_helpers::split_rand_vec;
@@ -23,7 +23,7 @@ pub fn greet_rust_helpers(name: &str) -> String {
 /// let chunked = split_rand_vec(vec, 3);
 /// assert_eq!(chunked.len(), 3);
 /// assert!(chunked.iter().all(|chunk| chunk.len() <= 3));
-/// /// The elements in the chunks are randomized, so the order may vary. 
+/// /// The elements in the chunks are randomized, so the order may vary.
 /// ```
 pub fn split_rand_vec<T: Clone>(vec: Vec<T>, chunk_size: usize) -> Vec<Vec<T>> {
     let mut rng = rand::rng();
@@ -56,9 +56,9 @@ pub fn split_rand_vec_eq<T: Clone>(vec: Vec<T>, parts: usize) -> Vec<Vec<T>> {
     vec.shuffle(&mut rng);
     let mut result = vec![Vec::new(); parts];
     for (i, e) in vec.iter().enumerate() {
-    result[i % parts].push(e.clone());
+        result[i % parts].push(e.clone());
     }
-    return result
+    return result;
 }
 
 /// Randomizes the order of a HashSet and splits it into smaller vectors of equal size.
@@ -85,9 +85,19 @@ pub fn split_rand_hashset_eq<T: Clone>(vec: HashSet<T>, parts: usize) -> Vec<Vec
     vec.shuffle(&mut rng);
     let mut result = vec![Vec::new(); parts];
     for (i, e) in vec.iter().enumerate() {
-    result[i % parts].push(e.clone());
+        result[i % parts].push(e.clone());
     }
-    return result
+    return result;
+}
+
+pub fn check_sufficient_items<T: PartialEq>(req_items: &[(T, usize)], checked_vector: &[T]) -> bool {
+    for (item, req_number_item) in req_items {
+        let cnt_check = dbg!(checked_vector.iter().filter(|x| *x == item).count());
+        if cnt_check < *req_number_item {
+            return false;
+        }
+    }
+    true
 }
 
 #[cfg(test)]
@@ -127,4 +137,15 @@ mod tests {
         assert_eq!(chunked[1].len(), 2);
         assert_eq!(chunked[2].len(), 2);
     }
+
+    #[test]
+    fn test_check_sufficient_items() {
+        let req_items = [("apple", 2), ("banana", 1), ("orange", 3)];
+        let checked_vector = vec!["apple", "apple", "apple", "banana", "orange", "orange", "orange", "orange"];
+        assert!(check_sufficient_items(&req_items, &checked_vector));
+
+        let insufficient_items = vec![("apple", 3), ("banana", 1)];
+        let insufficient_vector = vec!["apple", "banana", "orange"];
+        assert!(!check_sufficient_items(&insufficient_items, &insufficient_vector));
+    }    
 }
