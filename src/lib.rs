@@ -90,6 +90,20 @@ pub fn split_rand_hashset_eq<T: Clone>(vec: HashSet<T>, parts: usize) -> Vec<Vec
     return result;
 }
 
+/// Checks if a slice of the type 'T' contains sufficient items as specified.
+/// # Arguments
+/// * `req_items` - A slice of tuples where each tuple contains an item of type `T` and a required count of that item.
+/// * `checked_vector` - A slice of items of type `T` that has been checked against the requirements.
+///
+/// # Returns
+/// A boolean indicating whether the checked vector contains sufficient items as specified in `req_items`.
+/// # Example
+/// ```
+/// use rust_helpers::check_sufficient_items;
+/// let req_items = [("apple", 2), ("banana", 1), ("orange", 3)];
+/// let checked_vector = vec!["apple", "apple", "apple", "banana", "orange", "orange", "orange", "orange"];
+/// assert!(check_sufficient_items(&req_items, &checked_vector));
+/// ```
 pub fn check_sufficient_items<T: PartialEq>(req_items: &[(T, usize)], checked_vector: &[T]) -> bool {
     for (item, req_number_item) in req_items {
         let cnt_check = dbg!(checked_vector.iter().filter(|x| *x == item).count());
